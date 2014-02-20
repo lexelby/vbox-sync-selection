@@ -1,0 +1,21 @@
+In linux/X windows, we're used to being able to select text and middle-click paste it, using X's "primary selection".  VirtualBox provides clipboard synchronization, but as a design decision, this does NOT synchronize the middle-click selection buffer.  This leads to all manner of embarassing and aggravating mispastes.  These scripts synchronize the primary selection between two hosts (e.g. host and VM).
+
+To use, set up key-based passwordless ssh communication between the two hosts you're working with.  For VirtualBox, your best bet is to add a second network adapter to your VM using "host-only" mode.  You may have to set up a host-only network first.  Call the two hosts hostA and hostB.
+
+Do this on hostA:
+
+  clipboard-monitor 'xclip -o | ssh hostB set-selection'
+
+and on hostB:
+
+  clipboard-monitor 'xclip -o | ssh hostA set-selection'
+
+This requires the xclip program which is available in standard repos.
+
+Now, when you select text on host A, you can middle-click paste it on B, and vice versa.
+
+The set-selection tool is necessary to avoid an infinite loop.  Just using xclip to set the clipboard on the remote side causes the two hosts to trade the clipboard back and forth forever.  It also causes text to unhighlight immediately after you select it, which is visually disturbing.
+
+Note that xclip in "set" mode forks off a process and waits, serving the text until another program takes over the selection.  This is because in X, there is no clipboard "buffer"; applications advertise that they have text they're willing to share on a clipboard.  xclip needs to stay around to respond to requests for the clipboard text.
+
+

@@ -1,0 +1,15 @@
+#!/usr/bin/python
+
+import sys
+import gtk
+from subprocess import Popen, PIPE
+
+new_contents = sys.stdin.read()
+
+selection = gtk.clipboard_get(gtk.gdk.SELECTION_PRIMARY)
+existing_contents = selection.wait_for_text()
+
+if new_contents != existing_contents:
+    xclip = Popen('/usr/bin/xclip', stdin=PIPE)
+    xclip.communicate(new_contents)
+
